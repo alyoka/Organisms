@@ -1,9 +1,8 @@
 package ch.forea.organisms {
 	import flash.display.Sprite;
-	import flash.events.Event;
 
 	/**
-	 * @author alena
+	 * @author alyoka
 	 */
 	public class BasicOrganism extends Sprite implements IOrganism {
 		
@@ -15,7 +14,6 @@ package ch.forea.organisms {
 		//wander
 		private var _direction:Number;
 		private var _speed:Number;
-		private var _wanderAngle:Number;
 		
 		public function BasicOrganism(id:uint, colour:uint){
 			_id = id;
@@ -46,8 +44,7 @@ package ch.forea.organisms {
 			}else if(y >= World.HEIGHT) {
 				_direction = 270;
 			}
-			_wanderAngle = m/2 - .25;
-			_direction += _wanderAngle;
+			_direction += m/2 - .25;
 			x += Math.cos(_direction) * _speed;  
 			y += Math.sin(_direction) * _speed; 
 		}
@@ -79,41 +76,5 @@ package ch.forea.organisms {
 //		private var _maxStrength:Number;//inherited, increases with each fight//		private var _currentStrength:Number;//lifecycle, decreases with each fight and recovers to _maxStrength after some time
 //		
 //		private var _timeSinceLastSex:Number;//lifecycle
-//		
-//		public function get colourImportance():Number{
-//			return _colourImportance / age;	
-//		}
-//		
-//		public function meetMale(organism:AbstractOrganism):int{
-//			return 0;
-//		}
-//		
-//		public function meetFemale(organism:AbstractOrganism):int{
-//			return 0;
-//		}
-//		
-//		public function get agressivness():Number{
-//			return _maxAgressivness * strength / age;
-//		}
-//		
-//		//increases between age 0 - 10, stays at max until 30 and then decreases until death 
-//		public function get strength():Number{
-//			return _currentStrength * age;
-//		}
-//		
-//		//@returns colour difference (0 - 255)
-//		protected function compareColours(colour:uint):Number{
-//			var	r1:uint = this.colour >> 16;
-//			var g1:uint = (this.colour >> 8) & 255;//			var b1:uint = this.colour & 255;
-//			
-//			var	r2:uint = colour >> 16;
-//			var g2:uint = (colour >> 8) & 255;
-//			var b2:uint = colour & 255;
-//			
-//			var dr:uint = Math.abs(r1 - r2);//			var dg:uint = Math.abs(g1 - g2);//			var db:uint = Math.abs(b1 - b2);
-//			
-//			return (dr + dg + db) / 3;
-//		}
-		
 	}
 }
