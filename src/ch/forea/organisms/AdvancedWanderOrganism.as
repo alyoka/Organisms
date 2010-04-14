@@ -1,38 +1,30 @@
 package ch.forea.organisms {
 	import flash.display.Sprite;
 	import flash.geom.Vector3D;
+	import flash.utils.Dictionary;
 
 	/**
 	 * @author alyoka
 	 */
 	public class AdvancedWanderOrganism extends Sprite implements IOrganism {
 		
-		public var _sex:Boolean;
-		
 		private var _id:uint;
+		private var _sex:Boolean;
 		private var _colour:uint;
 		
-		//wander
-	    private var _velocity:Vector3D = new Vector3D();
-	    private var _acceleration:Vector3D = new Vector3D();
-	    private var _direction:Number;
+		//this dictionary will contain any implementation specific variables
+		private var _variables:Dictionary = new Dictionary();
 	    
-	    private const maxForce:Number = .1;
-	    private const maxSpeed:Number = 2;
-		
-		public function AdvancedWanderOrganism(id:uint, colour:uint){
-			//basic
+		public function AdvancedWanderOrganism(id:uint, sex:Boolean, colour:uint){
 			_id = id;
-			_sex = Math.round(Math.random()) == 1;
+			_sex = sex;
 			_colour = colour;
-			
-			//wander
-			_direction = Math.random()*360;
 		}
 		
 		public function draw():void{
 			// Draw a triangle rotated in the direction of the velocity.  1.57079633 = 90 degrees in radians
 			graphics.beginFill(_colour);
+			graphics.lineStyle(.5);
 			if(_sex){
 				graphics.drawRect(-5, -5, 10, 10);
 			}else{
@@ -42,53 +34,69 @@ package ch.forea.organisms {
 		}
 		
 		public function move():void{
+			if(!_variables["direction"]) _variables["direction"] = Math.random()*360;			if(!_variables["velocity"]) _variables["velocity"] = new Vector3D();			if(!_variables["acceleration"]) _variables["acceleration"] = new Vector3D();			if(!_variables["maxForce"]) _variables["maxForce"] = .1;			if(!_variables["maxSpeed"]) _variables["maxSpeed"] = 2;
+			
 			var location:Vector3D = new Vector3D(x,y);
 			// Update velocity
-	    	_velocity.incrementBy(_acceleration);
+	    	_variables["velocity"].incrementBy(_variables["acceleration"]);
 	    	// Limit speed
-	    	if(Math.sqrt(_velocity.x * _velocity.x + _velocity.y * _velocity.y + _velocity.z * _velocity.z) > maxSpeed){
-				_velocity.normalize();
-				_velocity.x *= maxSpeed;
-				_velocity.y *= maxSpeed;
-				_velocity.z *= maxSpeed;
+	    	if(Math.sqrt(_variables["velocity"].x * _variables["velocity"].x + _variables["velocity"].y * _variables["velocity"].y) > _variables["maxSpeed"]){
+				_variables["velocity"].normalize();
+				_variables["velocity"].x *= _variables["maxSpeed"];
+				_variables["velocity"].y *= _variables["maxSpeed"];
 	      	}
-	      	location.incrementBy(_velocity);
+	      	location.incrementBy(_variables["velocity"]);
 	      	// Reset acceleration to 0 each cycle
-	     	_acceleration.scaleBy(0);
+	     	_variables["acceleration"].scaleBy(0);
 
-			//
-			//check borders
-			if(location.x < 0) location.x = World.WIDTH;
-			else if(location.x > World.WIDTH) location.x = 0; 
-			if(location.y < 0) location.y = World.HEIGHT;
-			else if(location.y > World.HEIGHT) location.y = 0;
+			_variables["direction"] += Math.random() * .5 - .25; // randomly change our wander theta
 			
 			//
 			//wander
 			var wanderRadius:Number = 16; // Radius for our "wander circle"
 			var wanderDistance:Number = 60; // Distance for our "wander circle"
-			//var change:Number = .25;
-			_direction += Math.random() * .5 - .25; // randomly change our wander theta
 	      
 			// Now we have to calculate the new location to steer towards on the wander circle
-			var circleLocation:Vector3D = _velocity.clone(); // Start with the velocity
+			var circleLocation:Vector3D = _variables["velocity"].clone(); // Start with the velocity
 			circleLocation.normalize(); // Normalize to get heading
 			circleLocation.scaleBy(wanderDistance); //Multiply the distance
 			circleLocation.incrementBy(location); // Make it relative to the organism's location
 	      
-			var circleOffset:Vector3D = new Vector3D(wanderRadius * Math.cos(_direction), wanderRadius * Math.sin(_direction));
+			var circleOffset:Vector3D = new Vector3D(wanderRadius * Math.cos(_variables["direction"]), wanderRadius * Math.sin(_variables["direction"]));
 			var target:Vector3D = circleLocation.clone().add(circleOffset);
-			_acceleration.incrementBy(steer(location, target, false)); // Steer towards it
-	
-			// Render wandering circle, etc.
+
+			//check borders
+			if(target.x < 20) target.x = 10;
+			else if(target.x > World.WIDTH - 20) target.x = World.WIDTH - 10;
+			if(target.y < 20) target.y = 10;
+			else if(target.y > World.HEIGHT - 20) target.y = World.HEIGHT - 10;
+			
+			// Steer towards it
+			var steer:Vector3D; // The steering vector
+			var slowDown:Boolean = false;
+			var desired:Vector3D = target.clone().subtract(location); // A vector pointing from the location to the target
+			var distance:Number = Math.sqrt(desired.x * desired.x + desired.y * desired.y); // Distance from the target is the magnitude of the vector
+			// If the distance is greater than 0, calculate steering (otherwise return 0 vector)
+			if(distance > 0){
+				// Normalize desired
+				desired.normalize();
+				// Two options for desired vector magnitude (1 -- based on distance, 2 -- maxspeed)
+				if(slowDown && distance < 100) desired.scaleBy(_variables["maxSpeed"] * (distance / 100)); // This damping is somewhat arbitrary
+				else desired.scaleBy(_variables["maxSpeed"]);
+				// Steering = Desired - Velocity
+				steer = desired.subtract(_variables["velocity"]);
+				// Limit to maximum steering force
+				if(Math.sqrt(steer.x * steer.x + steer.y * steer.y) > _variables["maxForce"]){
+				steer.normalize();
+				steer.scaleBy(_variables["maxForce"]);
+				}
+			}else{
+				steer = new Vector3D();
+		    }
+			_variables["acceleration"].incrementBy(steer); 
+
 			x = location.x;
 			y = location.y;
-		}
-		
-		public function collides(organism:IOrganism):Boolean{
-			var dx:Number = x - organism.x;
-			var dy:Number = y - organism.y;
-			return Math.sqrt(dx*dx + dy*dy) <= (width/2 + organism.width/2);
 		}
 		
 		public function meet(organism:IOrganism):int{
@@ -106,32 +114,12 @@ package ch.forea.organisms {
 			return _sex;
 		}
 		
-	    private function steer(location:Vector3D, target:Vector3D, slowDown:Boolean):Vector3D{
-			var steer:Vector3D; // The steering vector
-			var desired:Vector3D = target.clone().subtract(location); // A vector pointing from the location to the target
-			var distance:Number = Math.sqrt(desired.x * desired.x + desired.y * desired.y + desired.z * desired.z); // Distance from the target is the magnitude of the vector
-			// If the distance is greater than 0, calculate steering (otherwise return 0 vector)
-			if(distance > 0){
-				// Normalize desired
-				desired.normalize();
-				// Two options for desired vector magnitude (1 -- based on distance, 2 -- maxspeed)
-				if(slowDown && distance < 100) desired.scaleBy(maxSpeed * (distance / 100)); // This damping is somewhat arbitrary
-				else desired.scaleBy(maxSpeed);
-				// Steering = Desired - Velocity
-				steer = desired.subtract(_velocity);
-				// Limit to maximum steering force
-				if(Math.sqrt(steer.x * steer.x + steer.y * steer.y + steer.z * steer.z) > maxForce){
-				steer.normalize();
-				steer.scaleBy(maxForce);
-				}
-			}else{
-				steer = new Vector3D();
-		    }
-		    return steer;
-		}
-		
 		public function get colour():uint {
 			return _colour;
+		}
+		
+		public function get variables():Dictionary {
+			return _variables;
 		}
 	}
 }

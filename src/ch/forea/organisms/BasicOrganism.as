@@ -1,26 +1,23 @@
 package ch.forea.organisms {
 	import flash.display.Sprite;
+	import flash.utils.Dictionary;
 
 	/**
 	 * @author alyoka
 	 */
 	public class BasicOrganism extends Sprite implements IOrganism {
 		
-		public var _sex:Boolean;
-		
 		private var _id:uint;
+		private var _sex:Boolean;
 		private var _colour:uint;
 		
-		//wander
-		private var _direction:Number;
-		private var _speed:Number;
+		//this dictionary will contain any implementation specific variables
+		private var _variables:Dictionary = new Dictionary();
 		
-		public function BasicOrganism(id:uint, colour:uint){
+		public function BasicOrganism(id:uint, sex:Boolean, colour:uint){
 			_id = id;
-			_sex = Math.round(Math.random()) == 1;
+			_sex = sex;
 			_colour = colour;
-			_direction = Math.random()*360;
-			_speed = Math.random()*2+.5;
 		}
 		
 		public function draw():void{
@@ -34,19 +31,18 @@ package ch.forea.organisms {
 		}
 		
 		public function move():void{
+			if(!_variables["direction"]) _variables["direction"] = Math.random()*360;
+			if(!_variables["speed"]) _variables["speed"] = Math.random()*2+.5;
+			
 			var m:Number = Math.random();
-			if(x <= 0){
-				_direction = 0;
-			}else if(x >= World.WIDTH) {
-				_direction = 180;
-			}else if(y <= 0){
-				_direction = 90;
-			}else if(y >= World.HEIGHT) {
-				_direction = 270;
-			}
-			_direction += m/2 - .25;
-			x += Math.cos(_direction) * _speed;  
-			y += Math.sin(_direction) * _speed; 
+			if(x <= 0) _variables["direction"] = 0;
+			else if(x >= World.WIDTH) _variables["direction"] = 180;
+			else if(y <= 0) _variables["direction"] = 90;
+			else if(y >= World.HEIGHT) _variables["direction"] = 270;
+
+			_variables["direction"] += m/2 - .25;
+			x += Math.cos(_variables["direction"]) * _variables["speed"];  
+			y += Math.sin(_variables["direction"]) * _variables["speed"]; 
 		}
 		
 		public function meet(organism:IOrganism):int{
@@ -68,13 +64,8 @@ package ch.forea.organisms {
 			return _colour;
 		}
 		
-//		public var age:uint;//lifecycle - 0 - 
-//		
-//		public var colour:uint;//		private var _colourImportance:Number;
-//		
-//		private var _maxAgressivness:Number;//inherited//		
-//		private var _maxStrength:Number;//inherited, increases with each fight//		private var _currentStrength:Number;//lifecycle, decreases with each fight and recovers to _maxStrength after some time
-//		
-//		private var _timeSinceLastSex:Number;//lifecycle
+		public function get variables():Dictionary {
+			return _variables;
+		}
 	}
 }

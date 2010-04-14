@@ -33,8 +33,8 @@ package ch.forea.organisms {
 			
 			var o:IOrganism;
 			for(idCounter = 0; idCounter<10; idCounter++){
-//				o = new BasicOrganism(idCounter, (Math.round(Math.random()) == 1 ? 0xff : 0xff0000));
-				o = new AdvancedWanderOrganism(idCounter, (Math.round(Math.random()) == 1 ? 0xff : 0xff0000));
+//				o = new BasicOrganism(idCounter, Math.round(Math.random()) == 1, (Math.round(Math.random()) == 1 ? 0xff : 0xff0000));
+				o = new AdvancedWanderOrganism(idCounter, Math.round(Math.random()) == 1, (Math.round(Math.random()) == 1 ? 0xff : 0xff0000));
 				o.x = Math.random() * World.WIDTH;
 				o.y = Math.random() * World.HEIGHT;
 				o.draw();
@@ -93,8 +93,8 @@ package ch.forea.organisms {
 		}
 		
 		public function mate(organism1:IOrganism, organism2:IOrganism):void{
-//			var o:IOrganism = new BasicOrganism(idCounter++, mergeColours(organism1.colour, organism2.colour));
-			var o:IOrganism = new AdvancedWanderOrganism(idCounter++, mergeColours(organism1.colour, organism2.colour));
+//			var o:IOrganism = new BasicOrganism(idCounter++, Math.round(Math.random()) == 1, mergeColours(organism1.colour, organism2.colour));
+			var o:IOrganism = new AdvancedWanderOrganism(idCounter++, Math.round(Math.random()) == 1, mergeColours(organism1.colour, organism2.colour));
 			o.x = organism1.x + 10 - Math.random() * 20;
 			o.y = organism2.y + 10 - Math.random() * 20;
 			o.draw();
