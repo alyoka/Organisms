@@ -20,7 +20,6 @@ package ch.forea.organisms {
 		private	var start:Number;	
 		
 		public function World() {
-			
 			start = new Date().getTime();
 			
 			graphics.beginFill(0,.1);
@@ -44,14 +43,17 @@ package ch.forea.organisms {
 		}
 		
 		private function update(e:Event):void{
-			checkCollision();
+			var killed:Vector.<IOrganism> = checkCollision();
+			if(killed.length) cleanup(killed);
 			for each(var o:IOrganism in organisms){
 				o.move();
 			}
 		}
 		
-		private function checkCollision():void{
-			var o1:IOrganism;			var o2:IOrganism;
+		private function checkCollision():Vector.<IOrganism>{
+			var killedOrganisms:Vector.<IOrganism> = new Vector.<IOrganism>();
+			var killed:IOrganism;			var o1:IOrganism;
+			var o2:IOrganism;
 			for(var i:uint = 0; i<organisms.length-1; i++){
 				o1 = organisms[i];				for(var k:uint = i+1; k<organisms.length; k++){
 					//check distance between the two organisms
@@ -62,7 +64,10 @@ package ch.forea.organisms {
 						if(!collisions[o1.id] && !collisions[o2.id]){
 							collisions[o1.id] = o2.id;
 							collisions[o2.id] = o1.id;
-							collide(o1, o2);
+							killed = collide(o1, o2);
+							if(killed){
+								killedOrganisms.push(killed);
+							}
 						}
 					}else if(collisions[o1.id]==o2.id || collisions[o2.id]==o1.id) {
 						collisions[o1.id] = null;
@@ -70,26 +75,39 @@ package ch.forea.organisms {
 					}
 				}
 			}
+			return killedOrganisms;
 		}
 		
-		public function collide(organism1:IOrganism, organism2:IOrganism):void{
+		private function cleanup(killed:Vector.<IOrganism>):void{
+			for each(var organism:IOrganism in killed){
+				collisions[organism.id] = null;
+				delete collisions[organism.id];
+				try{
+					removeChild(organism as DisplayObject);
+				}catch(e:Error){
+					throw e;
+				}
+				organisms.splice(organisms.indexOf(organism),1);
+			}
+		}
+		
+		private function collide(organism1:IOrganism, organism2:IOrganism):IOrganism{
 			trace("Collision");
 			var attracted1:int = organism1.meet(organism2);			var attracted2:int = organism2.meet(organism1);
 			if(attracted1 < -3 && attracted2 < -3){
-				var looser:IOrganism;
 				//FIGHT
-				looser = (Math.round(Math.random()) == 0) ? organism1 : organism2;
-				collisions[organism1.id] = null;
-				collisions[organism2.id] = null;
-				removeChild(looser as DisplayObject);
-				organisms.splice(organisms.indexOf(looser),1);
+				var looser:IOrganism = (Math.round(Math.random()) == 0) ? organism1 : organism2;
 				kills++;
-				trace('- mates: ' + (mates) + ', kills: ' + (kills) + ', population: '+organisms.length + ", time: "+((new Date().getTime() - start)/1000) + ", numChildren: "+numChildren);
+				trace('- mates: ' + (mates) + ', kills: ' + (kills) + ', population: '+(organisms.length-1) + ", time: "+((new Date().getTime() - start)/1000) + ", killed id: "+looser.id);
+				//cleanup collision for the survivor
+				collisions[looser == organism1 ? organism2.id : organism1.id] = null;
+				return looser;
 			}else if(attracted1 > 7 || attracted2 > 7){
 				//MATE
 				mate(organism1, organism2);
-				trace('+ mates: ' + (mates) + ', kills: ' + (kills) + ', population: '+organisms.length + ", time: "+((new Date().getTime() - start)/1000) + ", numChildren: "+numChildren);
+				trace('+ mates: ' + (mates) + ', kills: ' + (kills) + ', population: '+organisms.length + ", time: "+((new Date().getTime() - start)/1000));
 			}
+			return null;
 		}
 		
 		public function mate(organism1:IOrganism, organism2:IOrganism):void{
