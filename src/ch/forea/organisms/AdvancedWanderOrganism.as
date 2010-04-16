@@ -22,7 +22,6 @@ package ch.forea.organisms {
 		}
 		
 		public function draw():void{
-			// Draw a triangle rotated in the direction of the velocity.  1.57079633 = 90 degrees in radians
 			graphics.beginFill(_colour);
 			graphics.lineStyle(.5);
 			if(_sex){
