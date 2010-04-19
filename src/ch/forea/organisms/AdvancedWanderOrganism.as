@@ -1,30 +1,29 @@
 package ch.forea.organisms {
-	import flash.display.Sprite;
 	import flash.geom.Vector3D;
-	import flash.utils.Dictionary;
 
 	/**
 	 * @author alyoka
 	 */
-	public class AdvancedWanderOrganism extends Sprite implements IOrganism {
+	public class AdvancedWanderOrganism extends AbstractOrganism implements IOrganism {
 		
-		private var _id:uint;
-		private var _sex:Boolean;
-		private var _colour:uint;
-		
-		//this dictionary will contain any implementation specific variables
-		private var _variables:Dictionary = new Dictionary();
+//		private var _id:uint;
+//		private var _sex:Boolean;
+//		private var _colour:uint;
+//		
+//		//this dictionary will contain any implementation specific variables
+//		private var _variables:Dictionary = new Dictionary();
 	    
 		public function AdvancedWanderOrganism(id:uint, sex:Boolean, colour:uint){
-			_id = id;
-			_sex = sex;
-			_colour = colour;
+//			_id = id;
+//			_sex = sex;
+//			_colour = colour;
+			super(id, sex, colour);
 		}
 		
-		public function draw():void{
-			graphics.beginFill(_colour);
+		override public function draw():void{
+			graphics.beginFill(colour);
 			graphics.lineStyle(.5);
-			if(_sex){
+			if(sex){
 				graphics.drawRect(-5, -5, 10, 10);
 			}else{
 				graphics.drawCircle(0, 0, 5);
@@ -32,7 +31,7 @@ package ch.forea.organisms {
 			graphics.endFill();
 		}
 		
-		public function move():void{
+		override public function move():void{
 			if(!_variables["direction"]) _variables["direction"] = Math.random()*360;			if(!_variables["velocity"]) _variables["velocity"] = new Vector3D();			if(!_variables["acceleration"]) _variables["acceleration"] = new Vector3D();			if(!_variables["maxForce"]) _variables["maxForce"] = .1;			if(!_variables["maxSpeed"]) _variables["maxSpeed"] = 2;
 			
 			var location:Vector3D = new Vector3D(x,y);
@@ -98,27 +97,27 @@ package ch.forea.organisms {
 			y = location.y;
 		}
 		
-		public function meet(organism:IOrganism):int{
-			if(sex == organism.sex){
-				return -Math.round(Math.random()*10);
-			}
-			return Math.round(Math.random()*10);
-		}
-		
-		public function get id():uint {
-			return _id;
-		}
-		
-		public function get sex():Boolean {
-			return _sex;
-		}
-		
-		public function get colour():uint {
-			return _colour;
-		}
-		
-		public function get variables():Dictionary {
-			return _variables;
-		}
+//		public function meet(organism:IOrganism):int{
+//			if(sex == organism.sex){
+//				return -Math.round(Math.random()*10);
+//			}
+//			return Math.round(Math.random()*10);
+//		}
+//		
+//		public function get id():uint {
+//			return _id;
+//		}
+//		
+//		public function get sex():Boolean {
+//			return _sex;
+//		}
+//		
+//		public function get colour():uint {
+//			return _colour;
+//		}
+//		
+//		public function get variables():Dictionary {
+//			return _variables;
+//		}
 	}
 }

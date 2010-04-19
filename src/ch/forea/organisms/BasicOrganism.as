@@ -1,28 +1,27 @@
 package ch.forea.organisms {
-	import flash.display.Sprite;
-	import flash.utils.Dictionary;
 
 	/**
 	 * @author alyoka
 	 */
-	public class BasicOrganism extends Sprite implements IOrganism {
+	public class BasicOrganism extends AbstractOrganism implements IOrganism {
 		
-		private var _id:uint;
-		private var _sex:Boolean;
-		private var _colour:uint;
-		
-		//this dictionary will contain any implementation specific variables
-		private var _variables:Dictionary = new Dictionary();
+//		private var _id:uint;
+//		private var _sex:Boolean;
+//		private var _colour:uint;
+//		
+//		//this dictionary will contain any implementation specific variables
+//		private var _variables:Dictionary = new Dictionary();
 		
 		public function BasicOrganism(id:uint, sex:Boolean, colour:uint){
-			_id = id;
-			_sex = sex;
-			_colour = colour;
+//			_id = id;
+//			_sex = sex;
+//			_colour = colour;
+			super(id,sex,colour);
 		}
 		
-		public function draw():void{
-			graphics.beginFill(_colour);
-			if(_sex){
+		override public function draw():void{
+			graphics.beginFill(colour);
+			if(sex){
 				graphics.drawRect(-5, -5, 10, 10);
 			}else{
 				graphics.drawCircle(0, 0, 5);
@@ -30,7 +29,7 @@ package ch.forea.organisms {
 			graphics.endFill();
 		}
 		
-		public function move():void{
+		override public function move():void{
 			if(!_variables["direction"]) _variables["direction"] = Math.random()*360;
 			if(!_variables["speed"]) _variables["speed"] = Math.random()*2+.5;
 			
@@ -45,27 +44,27 @@ package ch.forea.organisms {
 			y += Math.sin(_variables["direction"]) * _variables["speed"]; 
 		}
 		
-		public function meet(organism:IOrganism):int{
-			if(sex == organism.sex){
-				return -Math.round(Math.random()*10);
-			}
-			return Math.round(Math.random()*10);
-		}
-		
-		public function get id():uint {
-			return _id;
-		}
-		
-		public function get sex():Boolean {
-			return _sex;
-		}
-		
-		public function get colour():uint {
-			return _colour;
-		}
-		
-		public function get variables():Dictionary {
-			return _variables;
-		}
+//		public function meet(organism:IOrganism):int{
+//			if(sex == organism.sex){
+//				return -Math.round(Math.random()*10);
+//			}
+//			return Math.round(Math.random()*10);
+//		}
+//		
+//		public function get id():uint {
+//			return _id;
+//		}
+//		
+//		public function get sex():Boolean {
+//			return _sex;
+//		}
+//		
+//		public function get colour():uint {
+//			return _colour;
+//		}
+//		
+//		public function get variables():Dictionary {
+//			return _variables;
+//		}
 	}
 }
