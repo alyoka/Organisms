@@ -17,11 +17,6 @@ package ch.forea.organisms {
 		private var collisions:Dictionary = new Dictionary();
 		private var idCounter:uint;
 		
-		//monitoring
-		private var kills:uint;
-		private var mates:uint;
-		private	var startTime:Number;	
-		
 		private var organismsContainer:Sprite;
 		
 		private var ui:UserInterface;
@@ -41,7 +36,6 @@ package ch.forea.organisms {
 		}
 		
 		private function start(e:Event):void{
-			startTime = new Date().getTime();
 			idCounter = 0;
 			var obj:DisplayObject;
 			while(organismsContainer.numChildren > 0){
@@ -69,7 +63,11 @@ package ch.forea.organisms {
 
 		private function update(e:Event):void{
 			var killed:Vector.<IOrganism> = checkCollision();
-			if(killed.length) cleanup(killed);
+			var kills:uint = 0;
+			if(killed.length) {
+				kills = killed.length;
+				cleanup(killed);
+			}
 			var colourDict:Dictionary = new Dictionary();
 			for(var i:uint = 0; i<organismsContainer.numChildren; i++) {
 				var o:IOrganism = organismsContainer.getChildAt(i) as IOrganism; 
@@ -80,7 +78,11 @@ package ch.forea.organisms {
 			for(var c:* in colourDict){
 				colours.push(new ColourDTO(c, colourDict[c]));
 			}
-			ui.update(((new Date().getTime() - startTime)/ 1000), organismsContainer.numChildren,colours,kills,mates);
+			ui.update(organismsContainer.numChildren,colours,kills);
+			//XXX: stop if too many instances
+			if(organismsContainer.numChildren == 200){
+				stop();
+			}
 		}
 		
 		private function checkCollision():Vector.<IOrganism>{
@@ -126,30 +128,18 @@ package ch.forea.organisms {
 		}
 		
 		private function collide(organism1:IOrganism, organism2:IOrganism):IOrganism{
-//			trace("Collision");
 			var attracted1:int = organism1.meet(organism2);			var attracted2:int = organism2.meet(organism1);
 			if(attracted1 < -3 && attracted2 < -3){
 				//FIGHT
 				var looser:IOrganism = (Math.round(Math.random()) == 0) ? organism1 : organism2;
-				kills++;
-//				trace('- mates: ' + (mates) + ', kills: ' + (kills) + ', population: '+(organisms.length-1) + ", time: "+((new Date().getTime() - start)/1000) + ", killed id: "+looser.id);
 				//cleanup collision for the survivor
 				collisions[looser == organism1 ? organism2.id : organism1.id] = null;
 				return looser;
 			}else if(attracted1 > 7 || attracted2 > 7){
 				//MATE
-				mate(organism1, organism2);
-				if(organismsContainer.numChildren == 200){
-					stop();
-				}
-//				trace('+ mates: ' + (mates) + ', kills: ' + (kills) + ', population: '+organisms.length + ", time: "+((new Date().getTime() - start)/1000));
+				addOrganism(idCounter++, mergeColours(organism1.colour, organism2.colour), organism1.x + 10 - Math.random() * 20, organism2.y + 10 - Math.random() * 20);
 			}
 			return null;
-		}
-		
-		public function mate(organism1:IOrganism, organism2:IOrganism):void{
-			addOrganism(idCounter++, mergeColours(organism1.colour, organism2.colour), organism1.x + 10 - Math.random() * 20, organism2.y + 10 - Math.random() * 20);
-			mates++;
 		}
 		
 		private function addOrganism(id:uint, colour:uint, xpos:Number, ypos:Number):void{

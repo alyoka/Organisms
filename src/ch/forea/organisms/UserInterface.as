@@ -13,7 +13,7 @@ package ch.forea.organisms {
 	 */
 	public class UserInterface extends Sprite {
 		
-		private var time:TextField;		private var timeValue:TextField;		private var kills:TextField;		private var killsValue:TextField;		private var mates:TextField;		private var matesValue:TextField;
+		private var timeTF:TextField;		private var timeValue:TextField;		private var killsTF:TextField;		private var killsValue:TextField;		private var matesTF:TextField;		private var matesValue:TextField;
 		private var organisms:TextField;		private var organismsValue:TextField;
 		private var colours:TextField;		private var coloursCount:TextField;		private var coloursValue:TextField;		private var statistics:TextField;		private var statisticsValue:TextField;
 		private var playStopBtn:Sprite;		private var pauseResumeBtn:Sprite;
@@ -21,6 +21,9 @@ package ch.forea.organisms {
 		private var organismDetails:Sprite;
 		
 		private var dominantColour:ColourDTO;
+		private var kills:uint = 0;		private var mates:uint = 0;
+		private var organismsCount:uint = 0;
+		private	var startTime:Number;		private	var pauseTime:Number = 0;		private	var pausedTime:Number = 0;
 		
 		private static const PLAYING:String = "playing";		private static const PAUSED:String = "paused";		private static const STOPPED:String = "stopped";
 		
@@ -47,21 +50,21 @@ package ch.forea.organisms {
 			pauseResumeBtn.addEventListener(MouseEvent.CLICK, changeState);
 			addChild(pauseResumeBtn);
 			
-			time = createTF(320,40,"Time:", true);
-			addChild(time);
-			timeValue = createTF(400,time.y,"0");
+			timeTF = createTF(320,40,"Time:", true);
+			addChild(timeTF);
+			timeValue = createTF(400,timeTF.y,"0");
 			addChild(timeValue);
 			
-			kills = createTF(320,time.y+16,"Kills:", true);			addChild(kills);
-			killsValue = createTF(400,kills.y,"0");
+			killsTF = createTF(320,timeTF.y+16,"Kills:", true);			addChild(killsTF);
+			killsValue = createTF(400,killsTF.y,"0");
 			addChild(killsValue);
 			
-			mates = createTF(320,kills.y+16,"Mates:", true);
-			addChild(mates);
-			matesValue = createTF(400,mates.y,"0");
+			matesTF = createTF(320,killsTF.y+16,"Mates:", true);
+			addChild(matesTF);
+			matesValue = createTF(400,matesTF.y,"0");
 			addChild(matesValue);
 			
-			organisms = createTF(320,mates.y+16,"Organisms:", true);
+			organisms = createTF(320,matesTF.y+16,"Organisms:", true);
 			addChild(organisms);
 			organismsValue = createTF(400,organisms.y,"");
 			addChild(organismsValue);
@@ -108,11 +111,16 @@ package ch.forea.organisms {
 			statisticsValue.text = "Time: "+timeValue.text+",\t kills: "+killsValue.text+",\t mates: "+matesValue.text+",\t organisms: "+organismsValue.text + ",\t dominant: " + dominantColour.valueInHex + "(" + dominantColour.count + ")\n" + statisticsValue.text;
 		}
 
-		public function update(time:Number, organisms:uint, colours:Array, kills:uint = 0, mates:uint = 0):void{
+		public function update(organisms:uint, colours:Array, kills:uint = 0):void{
+			var time:Number = new Date().getTime() - startTime - pausedTime;
 			timeValue.text = Math.floor(time / 60) + " : "+Math.floor(time % 60);
-			if(kills > 0) killsValue.text = String(kills);
+			//update mates, kills and organisms counts
+			this.kills += kills;
+			mates += organisms - organismsCount - kills;
+			organismsCount = organisms;
+			if(kills > 0) killsValue.text = String(this.kills);
 			if(mates > 0) matesValue.text = String(mates);
-			organismsValue.text = String(organisms);
+			organismsValue.text = String(organismsCount);
 			coloursValue.text = "";
 			//format colours to format [colour value   - count]
 			colours.sortOn("count", Array.NUMERIC | Array.DESCENDING);
@@ -147,6 +155,7 @@ package ch.forea.organisms {
 						pauseResumeBtn.visible = false;
 						dispatchEvent(new InterfaceEvent(InterfaceEvent.STOP));					}else{
 						state = PAUSED;
+						pausedTime += new Date().getTime() - pauseTime;
 						pauseResumeBtn.removeChildAt(0);
 						pauseResumeBtn.addChild(createTF(10,5,"Resume"));
 						playStopBtn.visible = false;
@@ -155,12 +164,13 @@ package ch.forea.organisms {
 				break;
 				case STOPPED:
 					state = PLAYING;
-					playStopBtn.removeChildAt(0);
+					startTime = new Date().getTime();					playStopBtn.removeChildAt(0);
 					playStopBtn.addChild(createTF(12,5,"Stop"));
 					pauseResumeBtn.visible = true;
 					dispatchEvent(new InterfaceEvent(InterfaceEvent.START));
-				break;				case PAUSED:
-					state = PLAYING;
+				break;
+				case PAUSED:					state = PLAYING;
+					pauseTime = new Date().getTime();
 					pauseResumeBtn.removeChildAt(0);
 					pauseResumeBtn.addChild(createTF(10,5,"Pause"));
 					playStopBtn.visible = true;
