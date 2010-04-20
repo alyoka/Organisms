@@ -16,24 +16,36 @@ package ch.forea.organisms {
 		private var time:TextField;		private var timeValue:TextField;		private var kills:TextField;		private var killsValue:TextField;		private var mates:TextField;		private var matesValue:TextField;
 		private var organisms:TextField;		private var organismsValue:TextField;
 		private var colours:TextField;		private var coloursCount:TextField;		private var coloursValue:TextField;		private var statistics:TextField;		private var statisticsValue:TextField;
-		private var toggleBtn:Sprite;
+		private var playStopBtn:Sprite;		private var pauseResumeBtn:Sprite;
 		
 		private var organismDetails:Sprite;
 		
 		private var dominantColour:ColourDTO;
 		
-		private var isRunning:Boolean = false;
+		private static const PLAYING:String = "playing";		private static const PAUSED:String = "paused";		private static const STOPPED:String = "stopped";
+		
+		private var state:String = "stopped";
 		
 		public function UserInterface() {
-			toggleBtn = new Sprite();
-			toggleBtn.graphics.lineStyle(.5);
-			toggleBtn.graphics.beginFill(0xAAAAAA);
-			toggleBtn.graphics.drawRoundRect(0, 0, 50, 25, 5);
-			toggleBtn.graphics.endFill();
-			toggleBtn.x = 320;
-			toggleBtn.addChild(createTF(10,5,"Start"));
-			toggleBtn.addEventListener(MouseEvent.CLICK, toggle);
-			addChild(toggleBtn);	
+			playStopBtn = new Sprite();
+			playStopBtn.graphics.lineStyle(.5);
+			playStopBtn.graphics.beginFill(0xAAAAAA);
+			playStopBtn.graphics.drawRoundRect(0, 0, 50, 25, 5);
+			playStopBtn.graphics.endFill();
+			playStopBtn.x = 320;
+			playStopBtn.addChild(createTF(10,5,"Start"));
+			playStopBtn.addEventListener(MouseEvent.CLICK, changeState);
+			addChild(playStopBtn);	
+			
+			pauseResumeBtn = new Sprite();
+			pauseResumeBtn.graphics.lineStyle(.5);
+			pauseResumeBtn.graphics.beginFill(0xAAAAAA);
+			pauseResumeBtn.graphics.drawRoundRect(0, 0, 50, 25, 5);
+			pauseResumeBtn.graphics.endFill();
+			pauseResumeBtn.x = 375;
+			pauseResumeBtn.addChild(createTF(10,5,"Pause"));
+			pauseResumeBtn.addEventListener(MouseEvent.CLICK, changeState);
+			addChild(pauseResumeBtn);
 			
 			time = createTF(320,40,"Time:", true);
 			addChild(time);
@@ -72,22 +84,12 @@ package ch.forea.organisms {
 			organismDetails = new Sprite();
 			organismDetails.graphics.lineStyle(.5);
 			organismDetails.graphics.beginFill(0xffffff);
-			organismDetails.graphics.drawRect(0, 0, 250, 50);
+			organismDetails.graphics.drawRect(0, 0, 200, 50);
 			organismDetails.graphics.endFill();
 			organismDetails.visible = false;
 			addChild(organismDetails);			
 		}
 		
-		private function toggle(me:MouseEvent):void{
-			if(isRunning){
-				toggleBtn.removeChildAt(0);				toggleBtn.addChild(createTF(10,5,"Start"));
-				dispatchEvent(new InterfaceEvent(InterfaceEvent.STOP));			}else{
-				toggleBtn.removeChildAt(0);				toggleBtn.addChild(createTF(12,5,"Stop"));
-				dispatchEvent(new InterfaceEvent(InterfaceEvent.START));
-			}
-			isRunning = !isRunning;
-		}
-
 		private function createTF(x:Number, y:Number, text:String="", bold:Boolean = false, underline:Boolean = false):TextField{
 			var tf:TextField = new TextField();
 			tf.autoSize = TextFieldAutoSize.LEFT;
@@ -121,8 +123,8 @@ package ch.forea.organisms {
 			coloursCount.text = "("+colours.length + "):";
 		}
 		
-		public function showOrganismDetails(xpos:Number, ypos:Number, id:uint, colour:uint, className:String):void{
-			organismDetails.addChild(createTF(2,2,"ID:\t\t"+id));			organismDetails.addChild(createTF(2,17,"Class:\t"+className));			organismDetails.addChild(createTF(2,32,"Colour:\t"+colour));
+		public function showOrganismDetails(xpos:Number, ypos:Number, id:uint, colour:uint, className:String, collisions:uint):void{
+			organismDetails.addChild(createTF(2,1,"ID:\t\t"+id));			organismDetails.addChild(createTF(2,13,"Class:\t\t"+className));			organismDetails.addChild(createTF(2,25,"Colour:\t"+ new ColourDTO(colour,0).valueInHex));			organismDetails.addChild(createTF(2,37,"Collisions:\t"+collisions));
 			organismDetails.visible = true;
 			organismDetails.x = xpos + 5;
 			organismDetails.y = ypos + 5;
@@ -133,6 +135,37 @@ package ch.forea.organisms {
 			while(organismDetails.numChildren > 0){
 				organismDetails.removeChildAt(0);
 			}
+		}
+		
+		private function changeState(me:MouseEvent):void{
+			switch(state){
+				case PLAYING:
+					if(me.target == playStopBtn){
+						state = STOPPED;
+						playStopBtn.removeChildAt(0);
+						playStopBtn.addChild(createTF(10,5,"Start"));
+						pauseResumeBtn.visible = false;
+						dispatchEvent(new InterfaceEvent(InterfaceEvent.STOP));					}else{
+						state = PAUSED;
+						pauseResumeBtn.removeChildAt(0);
+						pauseResumeBtn.addChild(createTF(10,5,"Resume"));
+						playStopBtn.visible = false;
+						dispatchEvent(new InterfaceEvent(InterfaceEvent.PAUSE));
+					}
+				break;
+				case STOPPED:
+					state = PLAYING;
+					playStopBtn.removeChildAt(0);
+					playStopBtn.addChild(createTF(12,5,"Stop"));
+					pauseResumeBtn.visible = true;
+					dispatchEvent(new InterfaceEvent(InterfaceEvent.START));
+				break;				case PAUSED:
+					state = PLAYING;
+					pauseResumeBtn.removeChildAt(0);
+					pauseResumeBtn.addChild(createTF(10,5,"Pause"));
+					playStopBtn.visible = true;
+					dispatchEvent(new InterfaceEvent(InterfaceEvent.RESUME));
+				break;			}
 		}
 	}
 }

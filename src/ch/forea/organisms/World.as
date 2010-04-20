@@ -14,7 +14,6 @@ package ch.forea.organisms {
 	public class World extends Sprite {
 		public static const WIDTH:Number = 300;		public static const HEIGHT:Number = 300;
 		
-		private var organisms:Vector.<IOrganism>;
 		private var collisions:Dictionary = new Dictionary();
 		private var idCounter:uint;
 		
@@ -22,6 +21,8 @@ package ch.forea.organisms {
 		private var kills:uint;
 		private var mates:uint;
 		private	var startTime:Number;	
+		
+		private var organismsContainer:Sprite;
 		
 		private var ui:UserInterface;
 		
@@ -32,17 +33,20 @@ package ch.forea.organisms {
 			x = 10;
 			y = 10;
 			
+			organismsContainer = addChild(new Sprite()) as Sprite;
+			
 			ui = new UserInterface();
-			ui.addEventListener(InterfaceEvent.START, start);			ui.addEventListener(InterfaceEvent.STOP, stop);
+			ui.addEventListener(InterfaceEvent.START, start);			ui.addEventListener(InterfaceEvent.STOP, stop);			ui.addEventListener(InterfaceEvent.PAUSE, pause);			ui.addEventListener(InterfaceEvent.RESUME, resume);
 			addChild(ui);
 		}
 		
 		private function start(e:Event):void{
 			startTime = new Date().getTime();
-			organisms = new Vector.<IOrganism>();
 			idCounter = 0;
-			for each(var o:IOrganism in organisms){
-				removeChild(o as DisplayObject).removeEventListener(MouseEvent.MOUSE_OVER, showOrganismDetails);				removeChild(o as DisplayObject).removeEventListener(MouseEvent.MOUSE_OUT, hideOrganismDetails);
+			var obj:DisplayObject;
+			while(organismsContainer.numChildren > 0){
+				obj = organismsContainer.removeChildAt(0);
+				obj.removeEventListener(MouseEvent.MOUSE_OVER, showOrganismDetails);				obj.removeEventListener(MouseEvent.MOUSE_OUT, hideOrganismDetails);
 			}
 			for(idCounter = 0; idCounter<10; idCounter++){
 				addOrganism(idCounter, (Math.round(Math.random()) == 1 ? 0xff : 0xff0000), Math.random() * World.WIDTH, Math.random() * World.HEIGHT);
@@ -54,12 +58,21 @@ package ch.forea.organisms {
 			removeEventListener(Event.ENTER_FRAME, update);
 			ui.printStatistics();
 		}
+		
+		private function pause(e:Event):void{
+			removeEventListener(Event.ENTER_FRAME, update);
+		}
+		
+		private function resume(e:Event):void{
+			addEventListener(Event.ENTER_FRAME, update);
+		}
 
 		private function update(e:Event):void{
 			var killed:Vector.<IOrganism> = checkCollision();
 			if(killed.length) cleanup(killed);
 			var colourDict:Dictionary = new Dictionary();
-			for each(var o:IOrganism in organisms){
+			for(var i:uint = 0; i<organismsContainer.numChildren; i++) {
+				var o:IOrganism = organismsContainer.getChildAt(i) as IOrganism; 
 				(colourDict[o.colour]) ? colourDict[o.colour] += 1 : colourDict[o.colour] = 1;
 				o.move();
 			}
@@ -67,17 +80,17 @@ package ch.forea.organisms {
 			for(var c:* in colourDict){
 				colours.push(new ColourDTO(c, colourDict[c]));
 			}
-			ui.update(((new Date().getTime() - startTime)/1000), organisms.length,colours,kills,mates);
+			ui.update(((new Date().getTime() - startTime)/ 1000), organismsContainer.numChildren,colours,kills,mates);
 		}
 		
 		private function checkCollision():Vector.<IOrganism>{
 			var killedOrganisms:Vector.<IOrganism> = new Vector.<IOrganism>();
 			var killed:IOrganism;			var o1:IOrganism;
 			var o2:IOrganism;
-			for(var i:uint = 0; i<organisms.length-1; i++){
-				o1 = organisms[i];				for(var k:uint = i+1; k<organisms.length; k++){
+			for(var i:uint = 0; i<organismsContainer.numChildren-1; i++){
+				o1 = organismsContainer.getChildAt(i) as IOrganism;				for(var k:uint = i+1; k<organismsContainer.numChildren; k++){
 					//check distance between the two organisms
-					o2 = organisms[k];
+					o2 = organismsContainer.getChildAt(k) as IOrganism;
 					var dx:Number = o1.x - o2.x;
 					var dy:Number = o1.y - o2.y;
 					//if they're close - collide
@@ -105,11 +118,10 @@ package ch.forea.organisms {
 				collisions[organism.id] = null;
 				delete collisions[organism.id];
 				try{
-					removeChild(organism as DisplayObject);
+					organismsContainer.removeChild(organism as DisplayObject);
 				}catch(e:Error){
 					throw e;
 				}
-				organisms.splice(organisms.indexOf(organism),1);
 			}
 		}
 		
@@ -127,7 +139,7 @@ package ch.forea.organisms {
 			}else if(attracted1 > 7 || attracted2 > 7){
 				//MATE
 				mate(organism1, organism2);
-				if(organisms.length == 200){
+				if(organismsContainer.numChildren == 200){
 					stop();
 				}
 //				trace('+ mates: ' + (mates) + ', kills: ' + (kills) + ', population: '+organisms.length + ", time: "+((new Date().getTime() - start)/1000));
@@ -146,9 +158,8 @@ package ch.forea.organisms {
 			o.x = xpos;
 			o.y = ypos;
 			o.draw();
-			organisms.push(o);
 			(o as DisplayObject).addEventListener(MouseEvent.MOUSE_OVER, showOrganismDetails);			(o as DisplayObject).addEventListener(MouseEvent.MOUSE_OUT, hideOrganismDetails);
-			addChild(o as DisplayObject);
+			organismsContainer.addChild(o as DisplayObject);
 		}
 		
 		private function mergeColours(c1:uint, c2:uint):uint{
@@ -169,7 +180,7 @@ package ch.forea.organisms {
 		
 		private function showOrganismDetails(me:MouseEvent):void{
 			var organism:IOrganism = me.target as IOrganism;
-			ui.showOrganismDetails(organism.x, organism.y, organism.id, organism.colour, organism.className);
+			ui.showOrganismDetails(organism.x, organism.y, organism.id, organism.colour, organism.className, collisions[organism.id]);
 		}
 		
 		private function hideOrganismDetails(me:MouseEvent):void{
