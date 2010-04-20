@@ -1,4 +1,5 @@
 package ch.forea.organisms {
+	import flash.utils.getQualifiedClassName;
 	import flash.display.Sprite;
 	import flash.utils.Dictionary;
 
@@ -9,7 +10,7 @@ package ch.forea.organisms {
 		
 		private var _id:uint;
 		private var _sex:Boolean;
-		private var _colour:uint;
+		private var _colour:uint;		private var _className:String;
 		
 		//this dictionary will contain any implementation specific variables
 		protected var _variables:Dictionary = new Dictionary();
@@ -18,6 +19,8 @@ package ch.forea.organisms {
 			_id = id;
 			_sex = sex;
 			_colour = colour;
+			
+			_className = getQualifiedClassName(this).replace(/([A-Za-z0-9.]*)(?:::)/,"");
 		}
 		
 		public function draw():void{
@@ -47,6 +50,10 @@ package ch.forea.organisms {
 		
 		public function get variables():Dictionary {
 			return _variables;
+		}
+		
+		public function get className():String {
+			return _className;
 		}
 	}
 }

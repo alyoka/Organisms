@@ -18,6 +18,8 @@ package ch.forea.organisms {
 		private var colours:TextField;		private var coloursCount:TextField;		private var coloursValue:TextField;		private var statistics:TextField;		private var statisticsValue:TextField;
 		private var toggleBtn:Sprite;
 		
+		private var organismDetails:Sprite;
+		
 		private var dominantColour:ColourDTO;
 		
 		private var isRunning:Boolean = false;
@@ -66,6 +68,14 @@ package ch.forea.organisms {
 			statisticsValue.mouseEnabled = true;
 			statisticsValue.mouseWheelEnabled = true;
 			addChild(statisticsValue);
+			
+			organismDetails = new Sprite();
+			organismDetails.graphics.lineStyle(.5);
+			organismDetails.graphics.beginFill(0xffffff);
+			organismDetails.graphics.drawRect(0, 0, 250, 50);
+			organismDetails.graphics.endFill();
+			organismDetails.visible = false;
+			addChild(organismDetails);			
 		}
 		
 		private function toggle(me:MouseEvent):void{
@@ -109,6 +119,20 @@ package ch.forea.organisms {
 				coloursValue.appendText(c.valueInHex + "\t-  " + c.count + "\n");
 			}
 			coloursCount.text = "("+colours.length + "):";
+		}
+		
+		public function showOrganismDetails(xpos:Number, ypos:Number, id:uint, colour:uint, className:String):void{
+			organismDetails.addChild(createTF(2,2,"ID:\t\t"+id));			organismDetails.addChild(createTF(2,17,"Class:\t"+className));			organismDetails.addChild(createTF(2,32,"Colour:\t"+colour));
+			organismDetails.visible = true;
+			organismDetails.x = xpos + 5;
+			organismDetails.y = ypos + 5;
+		}
+		
+		public function hideOrganismDetails():void{
+			organismDetails.visible = false;
+			while(organismDetails.numChildren > 0){
+				organismDetails.removeChildAt(0);
+			}
 		}
 	}
 }

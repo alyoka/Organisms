@@ -11,7 +11,7 @@ package ch.forea.organisms {
 		//getters
 		function get id():uint;
 		function get sex():Boolean;
-		function get colour():uint;
+		function get colour():uint;		function get className():String;
 		function get variables():Dictionary;//contains any implementation specific variables
 		
 		//display object

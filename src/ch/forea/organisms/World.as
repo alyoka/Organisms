@@ -5,6 +5,7 @@ package ch.forea.organisms {
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.MouseEvent;
 	import flash.utils.Dictionary;
 
 	/**
@@ -38,27 +39,20 @@ package ch.forea.organisms {
 		
 		private function start(e:Event):void{
 			startTime = new Date().getTime();
-			addEventListener(Event.ENTER_FRAME, update);
 			organisms = new Vector.<IOrganism>();
-			var o:IOrganism;
-			for(idCounter = 0; idCounter<10; idCounter++){
-//				o = new BasicOrganism(idCounter, Math.round(Math.random()) == 1, (Math.round(Math.random()) == 1 ? 0xff : 0xff0000));
-				o = new AdvancedWanderOrganism(idCounter, Math.round(Math.random()) == 1, (Math.round(Math.random()) == 1 ? 0xff : 0xff0000));
-				o.x = Math.random() * World.WIDTH;
-				o.y = Math.random() * World.HEIGHT;
-				o.draw();
-				organisms.push(o);
-				addChild(o as DisplayObject);
+			idCounter = 0;
+			for each(var o:IOrganism in organisms){
+				removeChild(o as DisplayObject).removeEventListener(MouseEvent.MOUSE_OVER, showOrganismDetails);				removeChild(o as DisplayObject).removeEventListener(MouseEvent.MOUSE_OUT, hideOrganismDetails);
 			}
+			for(idCounter = 0; idCounter<10; idCounter++){
+				addOrganism(idCounter, (Math.round(Math.random()) == 1 ? 0xff : 0xff0000), Math.random() * World.WIDTH, Math.random() * World.HEIGHT);
+			}
+			addEventListener(Event.ENTER_FRAME, update);
 		}
 		
 		private function stop(e:Event = null):void{
-			ui.printStatistics();
-			idCounter = 0;
 			removeEventListener(Event.ENTER_FRAME, update);
-			for each(var o:IOrganism in organisms){
-				removeChild(o as DisplayObject);
-			}
+			ui.printStatistics();
 		}
 
 		private function update(e:Event):void{
@@ -142,14 +136,19 @@ package ch.forea.organisms {
 		}
 		
 		public function mate(organism1:IOrganism, organism2:IOrganism):void{
-//			var o:IOrganism = new BasicOrganism(idCounter++, Math.round(Math.random()) == 1, mergeColours(organism1.colour, organism2.colour));
-			var o:IOrganism = new AdvancedWanderOrganism(idCounter++, Math.round(Math.random()) == 1, mergeColours(organism1.colour, organism2.colour));
-			o.x = organism1.x + 10 - Math.random() * 20;
-			o.y = organism2.y + 10 - Math.random() * 20;
+			addOrganism(idCounter++, mergeColours(organism1.colour, organism2.colour), organism1.x + 10 - Math.random() * 20, organism2.y + 10 - Math.random() * 20);
+			mates++;
+		}
+		
+		private function addOrganism(id:uint, colour:uint, xpos:Number, ypos:Number):void{
+//			var o:IOrganism = new BasicOrganism(idCounter++, Math.round(Math.random()) == 1, colour));
+			var o:IOrganism = new AdvancedWanderOrganism(id, Math.round(Math.random()) == 1, colour);
+			o.x = xpos;
+			o.y = ypos;
 			o.draw();
 			organisms.push(o);
+			(o as DisplayObject).addEventListener(MouseEvent.MOUSE_OVER, showOrganismDetails);			(o as DisplayObject).addEventListener(MouseEvent.MOUSE_OUT, hideOrganismDetails);
 			addChild(o as DisplayObject);
-			mates++;
 		}
 		
 		private function mergeColours(c1:uint, c2:uint):uint{
@@ -166,6 +165,15 @@ package ch.forea.organisms {
 			var b:uint = Math.min(b1,b2) + Math.abs(b1 - b2)/2;
 			
 			return (r<<16 | g<<8 | b);
+		}
+		
+		private function showOrganismDetails(me:MouseEvent):void{
+			var organism:IOrganism = me.target as IOrganism;
+			ui.showOrganismDetails(organism.x, organism.y, organism.id, organism.colour, organism.className);
+		}
+		
+		private function hideOrganismDetails(me:MouseEvent):void{
+			ui.hideOrganismDetails();
 		}
 	}
 }
