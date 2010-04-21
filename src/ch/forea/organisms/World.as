@@ -14,12 +14,13 @@ package ch.forea.organisms {
 	public class World extends Sprite {
 		public static const WIDTH:Number = 300;		public static const HEIGHT:Number = 300;
 		
-		private var collisions:Dictionary = new Dictionary();
+		private var collisions:Dictionary;
 		private var idCounter:uint;
 		
 		private var organismsContainer:Sprite;
 		
 		private var ui:UserInterface;
+		
 		
 		public function World() {
 			graphics.beginFill(0,.1);
@@ -36,29 +37,34 @@ package ch.forea.organisms {
 		}
 		
 		private function start(e:Event):void{
-			idCounter = 0;
+			idCounter = 1;
+			collisions = new Dictionary();
 			var obj:DisplayObject;
 			while(organismsContainer.numChildren > 0){
 				obj = organismsContainer.removeChildAt(0);
 				obj.removeEventListener(MouseEvent.MOUSE_OVER, showOrganismDetails);				obj.removeEventListener(MouseEvent.MOUSE_OUT, hideOrganismDetails);
 			}
-			for(idCounter = 0; idCounter<10; idCounter++){
+			for(idCounter; idCounter<=10; idCounter++){
 				addOrganism(idCounter, (Math.round(Math.random()) == 1 ? 0xff : 0xff0000), Math.random() * World.WIDTH, Math.random() * World.HEIGHT);
 			}
+			ui.play();
 			addEventListener(Event.ENTER_FRAME, update);
 		}
 		
 		private function stop(e:Event = null):void{
 			removeEventListener(Event.ENTER_FRAME, update);
 			ui.printStatistics();
+			ui.stop();
 		}
 		
 		private function pause(e:Event):void{
 			removeEventListener(Event.ENTER_FRAME, update);
+			ui.pause();
 		}
 		
 		private function resume(e:Event):void{
 			addEventListener(Event.ENTER_FRAME, update);
+			ui.resume();
 		}
 
 		private function update(e:Event):void{

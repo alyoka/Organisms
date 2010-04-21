@@ -21,11 +21,13 @@ package ch.forea.organisms {
 		private var organismDetails:Sprite;
 		
 		private var dominantColour:ColourDTO;
-		private var kills:uint = 0;		private var mates:uint = 0;
+		private var kills:uint = 0;		private var mates:int = 0;
 		private var organismsCount:uint = 0;
 		private	var startTime:Number;		private	var pauseTime:Number = 0;		private	var pausedTime:Number = 0;
 		
-		private static const PLAYING:String = "playing";		private static const PAUSED:String = "paused";		private static const STOPPED:String = "stopped";
+		private static const PLAYING:String = "playing";
+		private static const PAUSED:String = "paused";
+		private static const STOPPED:String = "stopped";
 		
 		private var state:String = "stopped";
 		
@@ -93,6 +95,15 @@ package ch.forea.organisms {
 			addChild(organismDetails);			
 		}
 		
+		private function reset():void{
+			kills = 0;
+			mates = 0;
+			organismsCount = 0;
+			startTime = new Date().getTime();
+			pausedTime = 0;
+			dominantColour = null;
+		}
+		
 		private function createTF(x:Number, y:Number, text:String="", bold:Boolean = false, underline:Boolean = false):TextField{
 			var tf:TextField = new TextField();
 			tf.autoSize = TextFieldAutoSize.LEFT;
@@ -112,14 +123,16 @@ package ch.forea.organisms {
 		}
 
 		public function update(organisms:uint, colours:Array, kills:uint = 0):void{
-			var time:Number = new Date().getTime() - startTime - pausedTime;
+			var time:Number = (new Date().getTime() - startTime - pausedTime)/1000;
 			timeValue.text = Math.floor(time / 60) + " : "+Math.floor(time % 60);
+			if(!organismsCount) organismsCount = organisms;
 			//update mates, kills and organisms counts
 			this.kills += kills;
-			mates += organisms - organismsCount - kills;
+			mates += (organisms - organismsCount + kills);
+			matesValue.text = String(mates);
 			organismsCount = organisms;
-			if(kills > 0) killsValue.text = String(this.kills);
-			if(mates > 0) matesValue.text = String(mates);
+			killsValue.text = String(this.kills);
+//			if(mates > 0) matesValue.text = String(mates);
 			organismsValue.text = String(organismsCount);
 			coloursValue.text = "";
 			//format colours to format [colour value   - count]
@@ -145,36 +158,46 @@ package ch.forea.organisms {
 			}
 		}
 		
+		public function play():void{
+			state = PLAYING;
+			reset();
+			playStopBtn.removeChildAt(0);
+			playStopBtn.addChild(createTF(12,5,"Stop"));
+			pauseResumeBtn.visible = true;
+		}
+		public function stop():void{
+			state = STOPPED;
+			playStopBtn.removeChildAt(0);
+			playStopBtn.addChild(createTF(10,5,"Start"));
+			pauseResumeBtn.visible = false;
+		}
+		public function pause():void{
+			state = PAUSED;
+			pauseTime = new Date().getTime();
+			pauseResumeBtn.removeChildAt(0);
+			pauseResumeBtn.addChild(createTF(10,5,"Resume"));
+			playStopBtn.visible = false;
+		}
+		public function resume():void{
+			state = PLAYING;
+			pausedTime += new Date().getTime() - pauseTime;
+			pauseResumeBtn.removeChildAt(0);
+			pauseResumeBtn.addChild(createTF(10,5,"Pause"));
+			playStopBtn.visible = true;
+		}
+		
 		private function changeState(me:MouseEvent):void{
 			switch(state){
 				case PLAYING:
 					if(me.target == playStopBtn){
-						state = STOPPED;
-						playStopBtn.removeChildAt(0);
-						playStopBtn.addChild(createTF(10,5,"Start"));
-						pauseResumeBtn.visible = false;
 						dispatchEvent(new InterfaceEvent(InterfaceEvent.STOP));					}else{
-						state = PAUSED;
-						pausedTime += new Date().getTime() - pauseTime;
-						pauseResumeBtn.removeChildAt(0);
-						pauseResumeBtn.addChild(createTF(10,5,"Resume"));
-						playStopBtn.visible = false;
 						dispatchEvent(new InterfaceEvent(InterfaceEvent.PAUSE));
 					}
 				break;
 				case STOPPED:
-					state = PLAYING;
-					startTime = new Date().getTime();					playStopBtn.removeChildAt(0);
-					playStopBtn.addChild(createTF(12,5,"Stop"));
-					pauseResumeBtn.visible = true;
 					dispatchEvent(new InterfaceEvent(InterfaceEvent.START));
 				break;
-				case PAUSED:					state = PLAYING;
-					pauseTime = new Date().getTime();
-					pauseResumeBtn.removeChildAt(0);
-					pauseResumeBtn.addChild(createTF(10,5,"Pause"));
-					playStopBtn.visible = true;
-					dispatchEvent(new InterfaceEvent(InterfaceEvent.RESUME));
+				case PAUSED:					dispatchEvent(new InterfaceEvent(InterfaceEvent.RESUME));
 				break;			}
 		}
 	}
