@@ -1,7 +1,7 @@
 package ch.forea.ui {
+	import ch.forea.dto.ClassDTO;
 	import ch.forea.dto.ColourDTO;
 	import ch.forea.ui.event.InterfaceEvent;
-	import ch.forea.ui.event.SliderEvent;
 	import ch.forea.ui.slider.Slider;
 
 	import flash.display.Sprite;
@@ -17,7 +17,10 @@ package ch.forea.ui {
 		
 		private var timeTF:TextField;		private var timeValue:TextField;		private var killsTF:TextField;		private var killsValue:TextField;		private var matesTF:TextField;		private var matesValue:TextField;
 		private var organisms:TextField;		private var organismsValue:TextField;
-		private var colours:TextField;		private var coloursCount:TextField;		private var coloursValue:TextField;		private var statistics:TextField;		private var statisticsValue:TextField;
+		private var colours:TextField;		private var coloursCount:TextField;		private var coloursValue:TextField;
+		private var classes:TextField;
+		private var classesCount:TextField;
+		private var classesValue:TextField;		private var statistics:TextField;		private var statisticsValue:TextField;
 		private var playStopBtn:Sprite;		private var pauseResumeBtn:Sprite;
 		
 		private var organismDetails:Sprite;
@@ -102,6 +105,13 @@ package ch.forea.ui {
 			coloursValue = createTF(320, colours.y+16,"");
 			addChild(coloursValue);
 			
+			classes = createTF(400, organisms.y+20, "Classes", true);
+			addChild(classes);
+			classesCount = createTF(classes.x+40, classes.y, ":", true);
+			addChild(classesCount);
+			classesValue = createTF(classes.x, classesCount.y+16,"");
+			addChild(classesValue);
+			
 			statistics = createTF(0,320,"Statistics:", true);
 			addChild(statistics);
 			statisticsValue = createTF(0,334);
@@ -147,7 +157,7 @@ package ch.forea.ui {
 			statisticsValue.text = "Time: "+timeValue.text+",\t kills: "+killsValue.text+",\t mates: "+matesValue.text+",\t organisms: "+organismsValue.text + ",\t dominant: " + dominantColour.valueInHex + "(" + dominantColour.count + ")\n" + statisticsValue.text;
 		}
 
-		public function update(organisms:uint, colours:Array, kills:uint = 0):void{
+		public function update(organisms:uint, colours:Array, classes:Array, kills:uint = 0):void{
 			var time:Number = (new Date().getTime() - startTime - pausedTime)/1000;
 			timeValue.text = Math.floor(time / 60) + " : "+Math.floor(time % 60);
 			if(!organismsCount) organismsCount = organisms;
@@ -167,6 +177,15 @@ package ch.forea.ui {
 				coloursValue.appendText(c.valueInHex + "\t-  " + c.count + "\n");
 			}
 			coloursCount.text = "("+colours.length + "):";
+			
+			classesValue.text = "";
+			//format colours to format [colour value   - count]
+			classes.sortOn("count", Array.NUMERIC | Array.DESCENDING);
+//			dominantClass = classes[0];
+			for each(var cl:ClassDTO in classes){
+				classesValue.appendText(cl.value + "\t-  " + cl.count + "\n");
+			}
+			classesCount.text = "("+classes.length + "):";
 		}
 		
 		public function showOrganismDetails(xpos:Number, ypos:Number, id:uint, colour:uint, className:String, collisions:uint):void{
