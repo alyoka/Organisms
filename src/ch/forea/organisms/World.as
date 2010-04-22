@@ -1,6 +1,7 @@
 package ch.forea.organisms {
 	import ch.forea.dto.ColourDTO;
-	import ch.forea.event.InterfaceEvent;
+	import ch.forea.ui.UserInterface;
+	import ch.forea.ui.event.InterfaceEvent;
 
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
@@ -36,7 +37,7 @@ package ch.forea.organisms {
 			addChild(ui);
 		}
 		
-		private function start(e:Event):void{
+		private function start(e:InterfaceEvent):void{
 			idCounter = 1;
 			collisions = new Dictionary();
 			var obj:DisplayObject;
@@ -44,8 +45,13 @@ package ch.forea.organisms {
 				obj = organismsContainer.removeChildAt(0);
 				obj.removeEventListener(MouseEvent.MOUSE_OVER, showOrganismDetails);				obj.removeEventListener(MouseEvent.MOUSE_OUT, hideOrganismDetails);
 			}
-			for(idCounter; idCounter<=10; idCounter++){
-				addOrganism(idCounter, (Math.round(Math.random()) == 1 ? 0xff : 0xff0000), Math.random() * World.WIDTH, Math.random() * World.HEIGHT);
+			var reds:uint = e.options.red;
+			var blues:uint = e.options.blue;
+			for(idCounter; idCounter<=reds; idCounter++){
+				addOrganism(idCounter, 0xff0000, Math.random() * World.WIDTH, Math.random() * World.HEIGHT);
+			}
+			for(idCounter; idCounter<=reds+blues; idCounter++){
+				addOrganism(idCounter, 0xff, Math.random() * World.WIDTH, Math.random() * World.HEIGHT);
 			}
 			ui.play();
 			addEventListener(Event.ENTER_FRAME, update);
