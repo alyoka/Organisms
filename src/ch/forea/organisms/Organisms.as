@@ -5,8 +5,8 @@ package ch.forea.organisms{
   public class Organisms extends Sprite{
 
     public function Organisms(){
-      BasicOrganism;
-      AdvancedWanderOrganism;
+      Organism00;
+      Organism11;
     }
 
   }
