@@ -1,6 +1,8 @@
-package ch.forea.organisms {
+package ch.forea.ui {
 	import ch.forea.dto.ColourDTO;
-	import ch.forea.event.InterfaceEvent;
+	import ch.forea.ui.event.InterfaceEvent;
+	import ch.forea.ui.event.SliderEvent;
+	import ch.forea.ui.slider.Slider;
 
 	import flash.display.Sprite;
 	import flash.events.MouseEvent;
@@ -20,11 +22,16 @@ package ch.forea.organisms {
 		
 		private var organismDetails:Sprite;
 		
+		//instantiation inputs
+		private var blueOrganisms:TextField;		private var blueOrganismsValue:Slider;		private var redOrganisms:TextField;		private var redOrganismsValue:Slider;
+		
+		//monitoring
 		private var dominantColour:ColourDTO;
 		private var kills:uint = 0;		private var mates:int = 0;
 		private var organismsCount:uint = 0;
 		private	var startTime:Number;		private	var pauseTime:Number = 0;		private	var pausedTime:Number = 0;
 		
+		//states
 		private static const PLAYING:String = "playing";
 		private static const PAUSED:String = "paused";
 		private static const STOPPED:String = "stopped";
@@ -32,12 +39,28 @@ package ch.forea.organisms {
 		private var state:String = "stopped";
 		
 		public function UserInterface() {
+			blueOrganisms = createTF(320,0,"Blue:", true);
+			addChild(blueOrganisms);
+			
+			blueOrganismsValue = new Slider(100, 0, 10, 1, 5, createTF(), createTF(), createTF());
+			blueOrganismsValue.x = 360;
+			blueOrganismsValue.y = blueOrganisms.y+5;
+			addChild(blueOrganismsValue);
+			
+			redOrganisms = createTF(320,blueOrganismsValue.y + 15,"Red:", true);
+			addChild(redOrganisms);
+			
+			redOrganismsValue = new Slider(100, 0, 10, 1, 5, createTF(), createTF(), createTF());
+			redOrganismsValue.x = 360;			redOrganismsValue.y = redOrganisms.y+5;
+			addChild(redOrganismsValue);
+			
 			playStopBtn = new Sprite();
 			playStopBtn.graphics.lineStyle(.5);
 			playStopBtn.graphics.beginFill(0xAAAAAA);
 			playStopBtn.graphics.drawRoundRect(0, 0, 50, 25, 5);
 			playStopBtn.graphics.endFill();
 			playStopBtn.x = 320;
+			playStopBtn.y = redOrganismsValue.y + 20;
 			playStopBtn.addChild(createTF(10,5,"Start"));
 			playStopBtn.addEventListener(MouseEvent.CLICK, changeState);
 			addChild(playStopBtn);	
@@ -48,16 +71,17 @@ package ch.forea.organisms {
 			pauseResumeBtn.graphics.drawRoundRect(0, 0, 50, 25, 5);
 			pauseResumeBtn.graphics.endFill();
 			pauseResumeBtn.x = 375;
+			pauseResumeBtn.y = playStopBtn.y;
 			pauseResumeBtn.addChild(createTF(10,5,"Pause"));
 			pauseResumeBtn.addEventListener(MouseEvent.CLICK, changeState);
 			addChild(pauseResumeBtn);
 			
-			timeTF = createTF(320,40,"Time:", true);
+			timeTF = createTF(320,playStopBtn.y + 40,"Time:", true);
 			addChild(timeTF);
 			timeValue = createTF(400,timeTF.y,"0");
 			addChild(timeValue);
-			
-			killsTF = createTF(320,timeTF.y+16,"Kills:", true);			addChild(killsTF);
+						killsTF = createTF(320,timeTF.y+16,"Kills:", true);
+			addChild(killsTF);
 			killsValue = createTF(400,killsTF.y,"0");
 			addChild(killsValue);
 			
@@ -93,8 +117,9 @@ package ch.forea.organisms {
 			organismDetails.graphics.endFill();
 			organismDetails.visible = false;
 			addChild(organismDetails);			
+			
 		}
-		
+
 		private function reset():void{
 			kills = 0;
 			mates = 0;
@@ -104,7 +129,7 @@ package ch.forea.organisms {
 			dominantColour = null;
 		}
 		
-		private function createTF(x:Number, y:Number, text:String="", bold:Boolean = false, underline:Boolean = false):TextField{
+		private function createTF(x:Number=0, y:Number=0, text:String="", bold:Boolean = false, underline:Boolean = false):TextField{
 			var tf:TextField = new TextField();
 			tf.autoSize = TextFieldAutoSize.LEFT;
 			tf.defaultTextFormat = new TextFormat("Arial", 10, null, bold, null, underline);
@@ -195,8 +220,8 @@ package ch.forea.organisms {
 					}
 				break;
 				case STOPPED:
-					dispatchEvent(new InterfaceEvent(InterfaceEvent.START));
-				break;
+					dispatchEvent(new InterfaceEvent(InterfaceEvent.START,{red:redOrganismsValue.value, blue:blueOrganismsValue.value}));
+					break;
 				case PAUSED:					dispatchEvent(new InterfaceEvent(InterfaceEvent.RESUME));
 				break;			}
 		}
