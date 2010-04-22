@@ -21,7 +21,7 @@ package ch.forea.ui.slider {
 		private var maxTF:TextField;
 		private var valTF:TextField;
 		
-		private var _value:uint;
+		private var _value:uint = 0;
 		 
 		public function Slider(width:Number, minVal:uint, maxVal:uint, step:uint, defaultVal:int = -1, minTF:TextField = null, maxTF:TextField = null, valTF:TextField = null) {
 			minValue = minVal;
@@ -34,6 +34,7 @@ package ch.forea.ui.slider {
 			thumb.graphics.drawRect(-3, -3, 6, 6);
 			thumb.graphics.endFill();
 			if(defaultVal >= 0){
+				_value = defaultVal;
 				thumb.x = valueToXpos(defaultVal);				
 			}
 			addChild(thumb);
