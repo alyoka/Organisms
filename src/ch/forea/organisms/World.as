@@ -155,8 +155,7 @@ package ch.forea.organisms {
 		}
 		
 		private function addOrganism(id:uint, colour:uint, xpos:Number, ypos:Number):void{
-//			var o:IOrganism = new BasicOrganism(idCounter++, Math.round(Math.random()) == 1, colour));
-			var o:IOrganism = new AdvancedWanderOrganism(id, Math.round(Math.random()) == 1, colour);
+			var o:IOrganism = new Organism11(id, Math.round(Math.random()) == 1, colour);
 			o.x = xpos;
 			o.y = ypos;
 			o.draw();
