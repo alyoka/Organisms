@@ -58,19 +58,13 @@ package ch.forea.organisms {
 	    trace("first load complete");
 	    classLoader.contentLoaderInfo.removeEventListener(Event.COMPLETE, loadOtherOne);
 	    // basic draw, advanced move
-	    _swf.position = 562 + 395;
-	    _swf.writeByte("1".charCodeAt(0));
-	    _swf.position = 562 + 425;
-	    _swf.writeByte("1".charCodeAt(0));
-	    _swf.position = 562 + 1684;
-	    _swf.writeByte(41);
+	    _swf[562 + 395] = "1".charCodeAt(0);
+	    _swf[562 + 425] = "1".charCodeAt(0);
+	    _swf[562 + 1684] = 41;
 	    // advanced draw, basic move                                                                                                                                                                        
-	    _swf.position = 562 + 436;
-	    _swf.writeByte("0".charCodeAt(0));
-	    _swf.position = 562 + 466;
-	    _swf.writeByte("0".charCodeAt(0));
-	    _swf.position = 562 + 1700;
-	    _swf.writeByte(36);
+	    _swf[562 + 436] = "0".charCodeAt(0);
+	    _swf[562 + 466] = "0".charCodeAt(0);
+	    _swf[562 + 1700] = 36;
 	    classLoader = new Loader();
 	    classLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, init);
 	    classLoader.loadBytes(_swf, new LoaderContext(false, ApplicationDomain.currentDomain));
